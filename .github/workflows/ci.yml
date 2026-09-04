@@ -1,4 +1,4 @@
-name: CI TaskFlow
+name: CI/CD TaskFlow
 
 on:
   push:
@@ -9,10 +9,14 @@ on:
     branches:
       - main
 
+permissions:
+  id-token: write
+  contents: read
+
 jobs:
 
-  test:
-    name: Testar aplicação
+  build:
+    name: Build e enviar imagens Docker
     runs-on: ubuntu-latest
 
     steps:
@@ -36,8 +40,34 @@ jobs:
       - name: Validar Docker Compose
         run: docker compose config
 
-      - name: Construir imagem Docker do backend
-        run: docker build -t taskflow-backend ./backend
+      - name: Configurar credenciais AWS
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: ${{ secrets.AWS_ROLE_ARN }}
+          aws-region: sa-east-1
 
-      - name: Construir imagem Docker do frontend
-        run: docker build -t taskflow-frontend ./frontend
+      - name: Login no Amazon ECR
+        id: login-ecr
+        uses: aws-actions/amazon-ecr-login@v2
+
+      - name: Construir imagem do backend
+        run: |
+          docker build \
+            -t ${{ steps.login-ecr.outputs.registry }}/taskflow-backend:latest \
+            ./backend
+
+      - name: Construir imagem do frontend
+        run: |
+          docker build \
+            -t ${{ steps.login-ecr.outputs.registry }}/taskflow-frontend:latest \
+            ./frontend
+
+      - name: Enviar imagem do backend para ECR
+        run: |
+          docker push \
+            ${{ steps.login-ecr.outputs.registry }}/taskflow-backend:latest
+
+      - name: Enviar imagem do frontend para ECR
+        run: |
+          docker push \
+            ${{ steps.login-ecr.outputs.registry }}/taskflow-frontend:latest
