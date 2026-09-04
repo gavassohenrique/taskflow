@@ -1,0 +1,43 @@
+name: CI TaskFlow
+
+on:
+  push:
+    branches:
+      - main
+
+  pull_request:
+    branches:
+      - main
+
+jobs:
+
+  test:
+    name: Testar aplicação
+    runs-on: ubuntu-latest
+
+    steps:
+
+      - name: Baixar código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
+
+      - name: Instalar dependências
+        working-directory: ./backend
+        run: npm ci
+
+      - name: Verificar código JavaScript
+        working-directory: ./backend
+        run: node --check src/server.js
+
+      - name: Validar Docker Compose
+        run: docker compose config
+
+      - name: Construir imagem Docker do backend
+        run: docker build -t taskflow-backend ./backend
+
+      - name: Construir imagem Docker do frontend
+        run: docker build -t taskflow-frontend ./frontend
