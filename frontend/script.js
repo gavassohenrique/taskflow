@@ -1,4 +1,4 @@
-const API_URL = "http://localhost:3000/api/tarefas";
+const API_URL = window.TASKFLOW_API_URL || "http://localhost:3000/api/tarefas";
 
 async function carregarTarefas() {
     try {

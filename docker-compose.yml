@@ -14,28 +14,10 @@ services:
     ports:
       - "3000:3000"
     environment:
-      DB_HOST: database
+      PORT: 3000
+      DB_HOST: taskflow-postgres2026.postgres.database.azure.com
       DB_PORT: 5432
       DB_NAME: taskflow
-      DB_USER: postgres
-      DB_PASSWORD: postgres
-      PORT: 3000
-    depends_on:
-      - database
-
-  database:
-    image: postgres:16
-    container_name: taskflow_database
-    restart: always
-    environment:
-      POSTGRES_DB: taskflow
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./database/init.sql:/docker-entrypoint-initdb.d/init.sql
-
-volumes:
-  postgres_data:
+      DB_USER: taskflowadmin
+      DB_PASSWORD: ${DB_PASSWORD}
+      DB_SSL: "true"
