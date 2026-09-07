@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  ACR_LOGIN_SERVER: taskflowacr2026.azurecr.io
+  ACR_LOGIN_SERVER: taskflowacr.azurecr.io
   BACKEND_IMAGE: taskflow-backend
   FRONTEND_IMAGE: taskflow-frontend
 
@@ -61,19 +61,21 @@ jobs:
     runs-on: ubuntu-latest
     needs: build-and-test
 
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+
     steps:
 
       - name: Baixar código
         uses: actions/checkout@v4
 
       - name: Login no Azure
-        uses: azure/login@v2
+        uses: azure/login@v3
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
       - name: Login no Azure Container Registry
         run: |
-          az acr login --name taskflowacr2026
+          az acr login --name taskflowacr
 
       - name: Construir imagem do backend
         run: |
